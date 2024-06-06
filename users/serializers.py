@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from shared.utils import check_email_or_phone
+from shared.utils import check_email_or_phone, send_phone_code
 from .models import User, UserConfirmation, VIA_EMAIL, VIA_PHONE
+from shared.utils import send_email
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -24,14 +25,16 @@ class SignUpSerializer(serializers.ModelSerializer):
             'auth_status': {'read_only': True, 'required': False},
         }
 
-    def create(self, validated_data):  # override
+    def create(self, validated_data):
         user = super(SignUpSerializer, self).create(validated_data)
         if user.auth_type == VIA_EMAIL:
             code = user.create_verify_code(VIA_EMAIL)
-            # send_email(user.email, code)
+            send_email(user.email, code)
+            print("Emailga kod yuborildi", code)
         elif user.auth_type == VIA_PHONE:
             code = user.create_verify_code(VIA_PHONE)
-            # send_email(user.phone_number, code)
+            send_email(user.phone_number, code)
+            print("Telefon raqamiga kod yuborildi", code)
             # send_phone_code(user.phone_number, code)
         user.save()
         return user
