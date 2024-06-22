@@ -38,9 +38,16 @@ INSTALLED_APPS = [
 
     'users',
     'shared',
+    'post',
 
+    # packages
     'rest_framework',
+    'rest_framework.authtoken',  # yangi
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'phonenumbers',
+    'twilio',
+    'drf_yasg',
 
 ]
 
