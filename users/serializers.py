@@ -1,4 +1,6 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
+from django.core.exceptions import PermissionDenied
 from django.core.validators import FileExtensionValidator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -7,7 +9,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 
-from shared.utils import check_email_or_phone, send_phone_code
+from shared.utils import check_email_or_phone, send_phone_code, check_user_type
 from .models import User, UserConfirmation, VIA_EMAIL, VIA_PHONE, CODE_VERIFIED, DONE, PHOTO_STEP
 from shared.utils import send_email
 
@@ -214,7 +216,7 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def validate(self, data):
         self.auth_validate(data)
-        if self.user.auth_status not in [DONE, PHOTO_DONE]:
+        if self.user.auth_status not in [DONE, PHOTO_STEP]:
             raise PermissionDenied("Siz login qila olmaysiz. Ruxsatingiz yoq")
         data = self.user.token()
         data['auth_status'] = self.user.auth_status
@@ -223,6 +225,7 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def get_user(self, **kwargs):
         users = User.objects.filter(**kwargs)
+        print(users)
         if not users.exists():
             raise ValidationError(
                 {
